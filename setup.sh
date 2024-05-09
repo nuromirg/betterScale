@@ -7,7 +7,7 @@ requirements(){
         echo "${BYELLOW}Autorandr${NC} is required to properly save & re-apply profiles, both manually & automatically."
         echo ""
         echo "Attempting to install now..."
-        sudo apt install autorandr
+        sudo dnf install -y autorandr
         echo ""
         read -p "${YELLOW}Press Enter to resume ...${NC}"
     fi
@@ -18,7 +18,6 @@ save(){
     echo ""
     echo -n "Set profile name [${GREEN}default${NC}${YELLOW}]:${NC} "
     read profile
-    # echo "$profile"
     if [[ $profile = "" ]]; then
         profile="default"
     fi
@@ -59,7 +58,7 @@ main() {
     echo "${BRED}Warning:${NC} There is a small chance that your session could freeze when changing scale."
     echo ""
     echo "If this happens press ${BGREEN}Ctrl+Alt+F2${NC} & run ${YELLOW}'kill -9 -1'${NC} to logout & back in."
-    echo "Then presss ${BGREEN}Ctrl+Alt+F7${NC} to go back to your GUI session."
+    echo "Then press ${BGREEN}Ctrl+Alt+F7${NC} to return to your GUI session."
     echo ""
     echo "Lastly apply a different scaling & then apply the one you originally wanted."
     echo "That will most likely avoid the glitch & you needing to reboot your system."
@@ -70,29 +69,29 @@ main() {
 
     FILE=/usr/share/X11/xorg.conf.d/20-intel.conf
     if ! test -f "$FILE"; then
-        echo "${BWHITE}Tearing & mouse flicker fix for intel GPUs is not found. Would you like to apply it?${NC}"
+        echo "${BWHITE}Tearing & mouse flicker fix for Intel GPUs is not found. Would you like to apply it?${NC}"
         question="This will copy 20-intel.conf to /usr/share/X11/xorg.conf.d/"
         choices=(*yes no)
         response=$(prompt "$question" $choices)
-        if [ "$response" == "y" ];then
+        if [ "$response" == "y" ]; then
             echo "Copying..."
             sudo cp ./20-intel.conf /usr/share/X11/xorg.conf.d/20-intel.conf
-            echo "Please logoff and back on & maybe reboot to see changes."
+            echo "Please log off and back on or reboot to see changes."
             exit 0
         fi
     else
         echo "Checking if 20-intel.conf is the same."
-        DIFF=$(diff -w ./20-intel.conf /usr/share/X11/xorg.conf.d/20-intel.conf) 
+        DIFF=$(diff -w ./20-intel.conf /usr/share/X11/xorg.conf.d/20-intel.conf)
         if [ "$DIFF" != "" ]; then
-            echo "${BWHITE}An 20-intel.conf file is found but differs, would you like to overwrite it?${NC}"
+            echo "${BWHITE}A 20-intel.conf file is found but differs. Would you like to overwrite it?${NC}"
             question="This will copy 20-intel.conf to /usr/share/X11/xorg.conf.d/"
             choices=(*yes no)
             response=$(prompt "$question" $choices)
-            if [ "$response" == "y" ];then
+            if [ "$response" == "y" ]; then
                 echo "Copying..."
                 sudo cp /usr/share/X11/xorg.conf.d/20-intel.conf /usr/share/X11/xorg.conf.d/20-intel.conf.bak
                 sudo cp ./20-intel.conf /usr/share/X11/xorg.conf.d/20-intel.conf
-                echo "Please logoff and back on & maybe reboot to see changes."
+                echo "Please log off and back on or reboot to see changes."
                 exit 0
             fi
         else
@@ -100,18 +99,7 @@ main() {
         fi
     fi
 
-
-    # Find if file exist
-    # copy if doesn't
-    # /usr/share/X11/xorg.conf.d/20-intel.conf
-    # if it does see if it matches existing file
-
-    # Grab all relevant information
-    # xrandr | grep -w connected  | awk -F'[ \+]' '{print $1","$3","$4","$5","$6}'
-    IFS=',' read -r -a monitor_settings <<< `xrandr | grep -w connected  | awk -F'[ \+]' '{print $1","$3","$4","$5","$6}'`
-    # echo "${monitor_settings[@]}"
-    # Grab native screen resolution
-    # xrandr --current | grep '*' | uniq | awk '{print $1}'
+    IFS=',' read -r -a monitor_settings <<< `xrandr | grep -w connected | awk -F'[ \+]' '{print $1","$3","$4","$5","$6}'`
 
     IFS='x' read -r -a native <<< `xrandr --current | grep '*' | uniq | awk '{print $1}'`
 
@@ -137,7 +125,6 @@ main() {
     res9_height=$(echo "${native[1]}*1.9" | bc)
     res10_width=$(echo "${native[0]}*2" | bc)
     res10_height=$(echo "${native[1]}*2" | bc)
-
 
     res11_width=$(echo "${native[0]}*1.25" | bc)
     res11_height=$(echo "${native[1]}*1.25" | bc)
